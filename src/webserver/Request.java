@@ -1,7 +1,5 @@
 package webserver;
 
-import BIF.SWE1.interfaces.Url;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +22,11 @@ public class Request implements BIF.SWE1.interfaces.Request {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.inputStream));
             String line = in.readLine();
-            if (line == null) throw new IOException("Not a valid HTTP request");
+            if (line == null) { // sometimes the Browser is sending an empty request?!
+                // this.method = "GET";
+                // this.url = new Url("/");
+                return;
+            }
             StringTokenizer parser = new StringTokenizer(line); // use std. delimiters (new-line, space, tab, ...)
             if (parser.hasMoreTokens()) this.method = parser.nextToken().toUpperCase(); // HTTP method of the client
             if (parser.hasMoreTokens()) this.url = new webserver.Url(parser.nextToken());
@@ -35,8 +37,9 @@ public class Request implements BIF.SWE1.interfaces.Request {
                 if (!parser.hasMoreTokens()) break;
                 String key = parser.nextToken().toLowerCase();
                 if (!parser.hasMoreTokens()) throw new IOException("Not a valid HTTP request");
-                String val = parser.nextToken().toLowerCase();
-                this.headers.put(key, val);
+                StringBuilder val = new StringBuilder(parser.nextToken());
+                while (parser.hasMoreTokens()) val.append(" ").append(parser.nextToken()); // Like in user-agent there are sometimes values containing whitespaces
+                this.headers.put(key, val.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,7 +74,7 @@ public class Request implements BIF.SWE1.interfaces.Request {
      * @return Returns a URL object of the request. Never returns null.
      */
     @Override
-    public Url getUrl() { // was zum f*ck soll das denn dann returnen, wenn der request nicht valide ist?
+    public webserver.Url getUrl() { // was zum f*ck soll das denn dann returnen, wenn der request nicht valide ist?
         return (this.isValid()) ? this.url : new webserver.Url("/");
     }
 
