@@ -1,17 +1,29 @@
 package webserver;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Response implements BIF.SWE1.interfaces.Response {
+
+    private int statusCode = 0;
+    private Map<String, String> headers = new HashMap<>();
+    private String content = null;
+    private byte[] contentByte = null;
+
+    public Response() {
+        this.headers.put("server", "BIF-SWE1-Server");
+    }
+
     /**
      * @return Returns a writable map of the response headers. Never returns
      * null.
      */
     @Override
     public Map<String, String> getHeaders() {
-        return null;
+        return this.headers;
     }
 
     /**
@@ -19,10 +31,12 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public int getContentLength() {
-        return 0;
+        if (this.content == null) return 0;
+        return this.content.length();
     }
 
     /**
+     * ToDo: implement
      * @return Gets the content type of the response.
      */
     @Override
@@ -31,6 +45,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
     }
 
     /**
+     * ToDo: implement
      * @param contentType Sets the content type of the response.
      * @throws IllegalStateException A specialized implementation may throw a
      *                               InvalidOperationException when the content type is set by the
@@ -45,16 +60,17 @@ public class Response implements BIF.SWE1.interfaces.Response {
      * @return Gets the current status code. An Exceptions is thrown, if no status code was set.
      */
     @Override
-    public int getStatusCode() {
-        return 0;
+    public int getStatusCode() throws IOException {
+        if (this.statusCode == 0) throw new IOException("No Statuscode set");
+        return this.statusCode;
     }
 
     /**
-     * @param status Sets the current status code.
+     * @param code Sets the current status code.
      */
     @Override
-    public void setStatusCode(int status) {
-
+    public void setStatusCode(int code) {
+        this.statusCode = code;
     }
 
     /**
@@ -62,18 +78,26 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public String getStatus() {
-        return null;
+        switch (this.statusCode) {
+            case 200:
+                return "200 OK";
+            case 404:
+                return "404 NOT FOUND";
+            case 500:
+            default:
+                return "500 INTERNAL SERVER ERROR";
+        }
     }
 
     /**
      * Adds or replaces a response header in the headers map
      *
-     * @param header
-     * @param value
+     * @param header the header-"key"
+     * @param value the header-"value"
      */
     @Override
     public void addHeader(String header, String value) {
-
+        this.headers.put(header, value);
     }
 
     /**
@@ -81,17 +105,17 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public String getServerHeader() {
-        return null;
+        return this.headers.get("server");
     }
 
     /**
      * Sets the Server response header.
      *
-     * @param server
+     * @param server the value for the header-"key" "server"
      */
     @Override
     public void setServerHeader(String server) {
-
+        this.headers.put("server", server);
     }
 
     /**
@@ -99,7 +123,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public void setContent(String content) {
-
+        this.content = content;
     }
 
     /**
@@ -107,10 +131,11 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public void setContent(byte[] content) {
-
+        this.contentByte = content;
     }
 
     /**
+     * ToDo: implement
      * @param stream Sets the stream as content.
      */
     @Override
@@ -119,6 +144,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
     }
 
     /**
+     * ToDo: implement
      * @param network Sends the response to the network stream.
      */
     @Override

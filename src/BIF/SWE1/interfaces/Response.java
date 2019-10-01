@@ -1,5 +1,6 @@
 package BIF.SWE1.interfaces;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
@@ -34,7 +35,7 @@ public interface Response {
 	/**
 	 * @return Gets the current status code. An Exceptions is thrown, if no status code was set.
 	 */
-	int getStatusCode();
+	int getStatusCode() throws IOException;
 
 	/**
 	 * @param status
