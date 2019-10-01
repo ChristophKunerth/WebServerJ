@@ -13,14 +13,14 @@ public class UEB3 {
 	}
 
 	public Request getRequest(InputStream inputStream) {
-		return null;
+		return new webserver.Request(inputStream);
 	}
 
 	public Response getResponse() {
-		return null;
+		return new webserver.Response();
 	}
 
 	public Plugin getTestPlugin() {
-		return null;
+		return new ;
 	}
 }

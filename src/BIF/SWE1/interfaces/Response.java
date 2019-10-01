@@ -35,7 +35,7 @@ public interface Response {
 	/**
 	 * @return Gets the current status code. An Exceptions is thrown, if no status code was set.
 	 */
-	int getStatusCode() throws IOException;
+	int getStatusCode();
 
 	/**
 	 * @param status

@@ -148,12 +148,12 @@ public class UEB2Test extends AbstractTestFixture<UEB2> {
 
 	@SuppressWarnings("unused")
 	@Test
-	public void response_should_throw_error_when_no_statuscode_was_set() throws IOException {
+	public void response_should_throw_error_when_no_statuscode_was_set() {
 		Response obj = createInstance().getResponse();
 
 		assertNotNull("UEB2.GetResponse returned null", obj);
 		// ToDo: Fix throw error
-		// assertThrows(() -> { int tmp = obj.getStatusCode(); });
+		assertThrows(() -> { int tmp = obj.getStatusCode(); });
 	}
 
 	@Test

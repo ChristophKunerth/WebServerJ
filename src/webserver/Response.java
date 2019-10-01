@@ -60,8 +60,10 @@ public class Response implements BIF.SWE1.interfaces.Response {
      * @return Gets the current status code. An Exceptions is thrown, if no status code was set.
      */
     @Override
-    public int getStatusCode() throws IOException {
-        if (this.statusCode == 0) throw new IOException("No Statuscode set");
+    public int getStatusCode() {
+
+        if (this.statusCode == 0) throw new IllegalStateException("No Statuscode set");
+
         return this.statusCode;
     }
 
