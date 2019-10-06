@@ -1,7 +1,7 @@
 package webserver;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,11 +9,10 @@ public class Response implements BIF.SWE1.interfaces.Response {
 
     private int statusCode = 0;
     private Map<String, String> headers = new HashMap<>();
-    private String content = null;
-    private byte[] contentByte = null;
+    private byte[] contentBytes = null;
 
     public Response() {
-        this.headers.put("server", "BIF-SWE1-Server");
+        this.headers.put("Server", "BIF-SWE1-Server");
     }
 
     /**
@@ -30,21 +29,20 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public int getContentLength() {
-        if (this.content == null) return 0;
-        return this.content.length();
+        if (this.contentBytes == null) return 0;
+        return this.contentBytes.length;
     }
 
     /**
-     * ToDo: implement
      * @return Gets the content type of the response.
      */
     @Override
     public String getContentType() {
-        return null;
+        if (!this.headers.containsKey("Content-Type")) return null;
+        return this.headers.get("Content-Type");
     }
 
     /**
-     * ToDo: implement
      * @param contentType Sets the content type of the response.
      * @throws IllegalStateException A specialized implementation may throw a
      *                               InvalidOperationException when the content type is set by the
@@ -52,7 +50,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public void setContentType(String contentType) {
-
+        this.headers.put("Content-Type", contentType);
     }
 
     /**
@@ -94,7 +92,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
      * Adds or replaces a response header in the headers map
      *
      * @param header the header-"key"
-     * @param value the header-"value"
+     * @param value  the header-"value"
      */
     @Override
     public void addHeader(String header, String value) {
@@ -106,7 +104,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public String getServerHeader() {
-        return this.headers.get("server");
+        return this.headers.get("Server");
     }
 
     /**
@@ -116,7 +114,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public void setServerHeader(String server) {
-        this.headers.put("server", server);
+        this.headers.put("Server", server);
     }
 
     /**
@@ -124,7 +122,7 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public void setContent(String content) {
-        this.content = content;
+        this.contentBytes = content.getBytes();
     }
 
     /**
@@ -132,24 +130,54 @@ public class Response implements BIF.SWE1.interfaces.Response {
      */
     @Override
     public void setContent(byte[] content) {
-        this.contentByte = content;
+        this.contentBytes = content;
     }
 
     /**
-     * ToDo: implement
      * @param stream Sets the stream as content.
      */
     @Override
     public void setContent(InputStream stream) {
-
+        try {
+            this.contentBytes = stream.readAllBytes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
-     * ToDo: implement
-     * @param network Sends the response to the network stream.
+     * @param networkOutputStream Sends the response to the network stream.
      */
     @Override
-    public void send(OutputStream network) {
+    public void send(OutputStream networkOutputStream) {
+        // To
+        try {
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(networkOutputStream));
+            BufferedOutputStream dataOut = new BufferedOutputStream(networkOutputStream); // binary output stream
 
+            out.write("HTTP/1.1 " + this.getStatus() + "\n");
+            this.addHeader("Content-Length", Integer.toString(this.getContentLength()));
+            this.addHeader("Content-Type", this.getContentType());
+            this.addHeader("Date", new Date() + "");
+
+            for (Map.Entry<String, String> header : this.headers.entrySet()) {
+                String h = header.getKey() + ": " + header.getValue() + "\n";
+                out.write(h);
+            }
+            out.write("\n"); // Required to match HTTP protocol specification!! very important!
+
+            out.flush();
+
+            dataOut.write(this.contentBytes);
+
+            dataOut.flush();
+
+            out.close();
+            dataOut.close();
+            networkOutputStream.close();
+        } catch (IOException e) {
+            System.out.println("Fehler mit Nachricht: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

@@ -1,8 +1,11 @@
 package webserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 
 public class HTTPServerInstance implements  Runnable {
@@ -14,22 +17,24 @@ public class HTTPServerInstance implements  Runnable {
     HTTPServerInstance(Socket connection) throws IOException {
         this.connection = connection;
         this.request = new Request(this.connection.getInputStream());
-        this.url = this.request.getUrl();
     }
 
     @Override
     public void run() {
+        if (!this.request.isValid()) return;
+        if (HTTPServer.verbose) {
+            System.out.println("\nNew incoming connection (" + new Date() + "):");
+            System.out.println("Requested URL: " + this.request.getUrl().getRawUrl());
+        }
         try {
-            // System.out.println("Requested URL via " + this.request.getMethod() + " method: " + this.url.getRawUrl());
-            PrintWriter out = new PrintWriter(this.connection.getOutputStream()); // character output stream
-            out.println("HTTP/1.1 200 OK");
-            out.println("Content-length: 0");
-            out.println("Server: Java HTTP Server by Semeon Funck 1.0");
-            out.println("Date: " + new Date().toString());
-            out.println("Content-type: text/plain");
-            out.println(); // Required to match HTTP protocol specification!! very important!
-            out.flush();
-            out.close();
+            Response res = new Response();
+            res.setStatusCode(200);
+            res.setContentType("text/html");
+//            res.setContentType("image/jpeg");
+            res.setContent("<h1>Hello World!</h1>");
+//            byte[] fileContent = Files.readAllBytes(Paths.get("test.jpg"));
+//            res.setContent(fileContent);
+            res.send(connection.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
